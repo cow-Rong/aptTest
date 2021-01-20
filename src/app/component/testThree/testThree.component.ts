@@ -55,22 +55,27 @@ export class TestThreeComponent implements OnInit {
     this.scene.add(axesHelper);
     // 网格
     const gridHelper = new THREE.GridHelper(1000, 1000);
-    this.scene.add(gridHelper);
+    // this.scene.add(gridHelper);
   }
 
   init() {
     this.scene = new THREE.Scene(); // 场景
 
-    this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
-    this.camera.position.set(161 * 2, 205 * 2, 247 * 2);
+    this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 2000);
+    this.camera.position.set(0, 200 * 0.84, 247 * 1.6);
 
-    this.renderer = new THREE.WebGLRenderer(); // antialias:是否开启反锯齿，设置为true开启反锯齿
+    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true }); // antialias:是否开启反锯齿，设置为true开启反锯齿 //, alpha: true
+    this.renderer.setClearAlpha(0x000000, 0);
     this.renderer.setPixelRatio(window.devicePixelRatio); // 我觉得要加
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(this.renderer.domElement);
 
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
 
+    // const loader = new THREE.TextureLoader();
+    // const bgTexture = loader.load('/assets/3d/background.jpg');
+    // this.scene.background = bgTexture;
+    // this.scene.background = new THREE.Color(0x4a8be4);
     const light = new THREE.HemisphereLight(0xffffff, 0xcccccc, 1);
     this.scene.add(light);
 
@@ -87,19 +92,44 @@ export class TestThreeComponent implements OnInit {
     // 生成曲线
     const startVec = new THREE.Vector3(50, 0, 0);
     const endVec = new THREE.Vector3(-20, 30, 30);
-    this.generateLine(startVec, endVec, 'y', 10);
+    // this.generateLine(startVec, endVec, 'y', 10);
 
     // 添加模型
     const mtlDir = '/assets/3d/第三方系统.mtl';
     const objDir = '/assets/3d/第三方系统.obj';
     const position = new THREE.Vector3(0, 0, 0);
-    this.addObjModel(mtlDir, objDir, position);
+    // this.addObjModel(mtlDir, objDir, position);
 
     window.addEventListener('resize', this.onWindowResize, false);
   }
 
-  parseData(){
-    
+  parseData() {
+    for (const i in this.data) {
+      if (this.data[i].type === 'plant') {
+        this.initObject(this.data[i].size, this.data[i].position, this.data[i].bgcolor, this.data[i].opacity, this.data[i].text);
+      } else if (this.data[i].type === 'block') {
+        this.initObject(this.data[i].size, this.data[i].position, this.data[i].bgcolor, this.data[i].opacity, this.data[i].text);
+      } else if (this.data[i].type === 'modele') {
+
+      } else if (this.data[i].type === 'line') {
+
+      }
+    }
+  }
+
+  // 画多个区域（面）
+  initObject(size, position, bgcolor, opacity, text?) {
+    const geometry = new THREE.PlaneGeometry(...size);      //
+    const material = new THREE.MeshLambertMaterial({       // MeshBasicMaterial 不受光照影响
+      color: bgcolor,
+      opacity,
+      side: THREE.DoubleSide,
+      transparent: true
+    });  // 双面
+    const cube = new THREE.Mesh(geometry, material);
+    cube.rotation.x += Math.PI / 2;
+    cube.position.set(position[0], position[1], position[2]);
+    this.scene.add(cube);
   }
 
   addObjModel(mtlDir, objDir, position) {
